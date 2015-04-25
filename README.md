@@ -1,10 +1,11 @@
 debugContext
 ============
 
-A  library providing utility methods to support the execution and debugging of Apigee Edge JSC callout policies on your local machine. 
+A  library providing utility methods to support the execution and debugging of Apigee Edge JSC callout policies on your local machine.
 
 ## Installation
-	The only prerequisites not handled during the installation are a functional Node environment and the availabilty of npm. 
+
+The only prerequisites not handled during the installation are a functional Node environment and the availabilty of npm. 
 	
 	Clone this repository to your local machine.
 	
