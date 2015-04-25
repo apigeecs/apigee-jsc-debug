@@ -1,10 +1,18 @@
 24Solver
 ========
 
-A very simple no target proxy useful for demonstrating simple javascript callout debugging practices. 24Solver takes 4 numbers as input and returns a list of possible formulas using each and every number to arrive at the result of 24. 
+A very simple no target proxy useful for demonstrating simple javascript callout debugging practices. 24Solver takes 4 numbers as input and returns a list of possible formulas using each and every number to arrive at the result of 24. More info about the game can be found here: http://en.wikipedia.org/wiki/24_Game
 
-More info about the game can be found here:
-http://en.wikipedia.org/wiki/24_Game
+For instance if you want to see how many ways 1, 2, 4, and 6 can be combined to arrive at 24:
+	calling: http://davidwallen2014-test.apigee.net/24solver?numbers=1,2,4,6
+	results in:
+		{
+		    "numbers": "1,2,4,6",
+		    "count": 20,
+		    "answers": ["(2-1)*4*6", "(2-1)*(4*6)", "(2-1)*6*4", "(2-1)*(6*4)", "(2+6)*(4-1)", "(4-1)*(2+6)", "(4-1)*(6+2)", "4*(2-1)*6", "4/(2-1)*6", "(4*6)*(2-1)", "4*6*(2-1)", "(4*6)/(2-1)", "4*6/(2-1)", "6*(2-1)*4", "6/(2-1)*4", "(6+2)*(4-1)", "(6*4)*(2-1)", "6*4*(2-1)", "(6*4)/(2-1)", "6*4/(2-1)"]
+		}
+
+The implementation is lightly tested and has numerous bugs including not accounting for integer division in creating results. It is left as an exercise for the reader to solve these issues. Doing so locally will significantly speed up the debugging process.
 
 ## Installation
 
