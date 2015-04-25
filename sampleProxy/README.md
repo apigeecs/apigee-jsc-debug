@@ -12,7 +12,7 @@ For instance if you want to see how many ways 1, 2, 4, and 6 can be combined to 
 		    "answers": ["(2-1)*4*6", "(2-1)*(4*6)", "(2-1)*6*4", "(2-1)*(6*4)", "(2+6)*(4-1)", "(4-1)*(2+6)", "(4-1)*(6+2)", "4*(2-1)*6", "4/(2-1)*6", "(4*6)*(2-1)", "4*6*(2-1)", "(4*6)/(2-1)", "4*6/(2-1)", "6*(2-1)*4", "6/(2-1)*4", "(6+2)*(4-1)", "(6*4)*(2-1)", "6*4*(2-1)", "(6*4)/(2-1)", "6*4/(2-1)"]
 		}
 
-The implementation is lightly tested and has numerous bugs including not accounting for integer division in creating results. It is left as an exercise for the reader to solve these issues. Doing so locally will significantly speed up the debugging process.
+The implementation is lightly tested and has numerous bugs including not accounting for integer division in testing candidate results. It is left as an exercise for the reader to solve these issues. Doing so locally will significantly speed up the debugging process.
 
 ## Installation
 
