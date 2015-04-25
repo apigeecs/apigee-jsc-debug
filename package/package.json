@@ -1,0 +1,32 @@
+{
+    "name": "apigee-jsc-debug",
+    "version": "0.1.0",
+    "description": "Node module to facilitate local execution and debugging of Apigee JSC callouts.",
+    "main": "apigee-jsc-debug.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/apigeecs/apigee-jsc-debug"
+    },
+    "keywords": [
+        "JSC",
+        "Apigee",
+        "Edge"
+    ],
+    "author": "David Allen <dallen@apigee.com>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/apigeecs/apigee-jsc-debug/issues"
+    },
+    "private": true,
+    "dependencies": {
+        "fs": ">= 0.0.2",
+        "xml2js": ">= 0.4.5",
+        "jshint": ">= 2.6.0",
+        "diff":">= 1.3.2",
+        "xml-stream":">= 0.4.5",
+        "path": ">= 0.11.14"
+    }
+}

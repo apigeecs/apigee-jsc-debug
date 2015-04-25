@@ -1,0 +1,39 @@
+The MIT License (MIT)
+
+Copyright (c) 2015 David Allen, Apigee
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+========-------==========------------============----------------
+
+
+========-------==========------------============----------------
+
+Below list details third Party libraries used in this project and their corresponding licenses
+
+========-------==========------------============----------------
+
+ Node: "fs": "0.0.2", License Type: MIT, https://www.npmjs.com/package/fs
+ Node: "xml2js": "0.4.5", License Type: MIT, https://github.com/Leonidas-from-XIV/node-xml2js
+ Node: "jshint": "2.6.0", License Type: MIT, https://github.com/jshint/jshint
+ Node: "diff":"1.3.2", License Type: BSD, https://github.com/kpdecker/jsdiff
+ Node: "xml-stream":"0.4.5", License Type: Custom, https://github.com/assistunion/xml-stream
+ Node: "path": "0.11.14", License Type: MIT, https://github.com/jinder/path
+
+========-------==========------------============----------------
