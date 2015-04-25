@@ -29,9 +29,18 @@ The only prerequisites not handled during the installation are a functional Node
 
 	context.debug(config);
 
-Advanced features inlcude jshinting of the code "bundle" that comprises the callout (includeURL in the policy defintion and any resources included via the resourceURL entries), the ability to diff the result of the local processing with what was produced from the message processor. These features are helpful when you want to regression test changes to ensure they are not breaking existing payloads, when profiling performance of the Javascript, and helping to identify possible side effects from inconsistent coding practices. 
+Advanced features inlcude:
+* jshint of the code "bundle" that comprises the callout (includeURL in the policy defintion and any resources included via the resourceURL entries)
+* diff of MP produced outputs and local produced outputs useful for regression testing changes to ensure they are not breaking existing functionality
+* monitors - set a two monitor points anywhere in your code (monitor("foo")) and the framework will report time to execute and difference in avail memory (consumed memory roughly)
+* inputs - the variables consumed by the callout when executed on the message processor
+* outputs - variables written back to context while executing
+* accesses - the variables the callout made while executing locally
+* errors - the raw error and a translated version of the error - the translated version "unclumps" the includes and resource files so you can better identify where your error
+
 
 You may also specify that a particular transaction from the trace file be used for the test run. Alternatively you can specify that the test run against all transactions in the trace file. Again useful when doing regression testing.
+
 
 The advanced configuration looks like this:
 
@@ -41,7 +50,7 @@ The advanced configuration looks like this:
 	    policy: "jsMediationTest",
 	    traceFile: "./trace-files/trace-1234.xml",
 	    traceIndex:"all",
-	    //all,monitors,inputs,outputs,accesses,monitors
+	    //all,monitors,inputs,outputs,accesses,monitors,jshint,errors,diff
 	    results: "monitors,errors,diff",
 	    diff: "all"
 	};
