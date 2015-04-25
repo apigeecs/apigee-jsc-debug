@@ -66,10 +66,10 @@ context.setVariable("response.content", JSON.stringify(result));
 
 function permutator(input) {
     var set = [];
+    debugger;
     return permute(input);
 
     function permute(arr, data) {
-        debugger;
         var cur, memo = data || [];
         if (!arr.splice) arr = arr.split(",");
 

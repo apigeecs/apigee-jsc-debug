@@ -3,6 +3,8 @@ debugContext
 
 A  library providing utility methods to support the execution and debugging of Apigee Edge JSC callout policies on your local machine.
 
+This library requires no addiitonal code in your javascript, and it executes outside the core framework of Edge.
+
 ## Installation
 
 The only prerequisites not handled during the installation are a functional Node environment and the availabilty of npm. 
@@ -43,7 +45,9 @@ You may also specify that a particular transaction from the trace file be used f
 
 The onFinish element of the config block gives you the opportunity to call any post execution validation logic you might want. The example below dumps the response.content variable to the console.
 
-An advanced configuration looks like this:
+When used with node-debug you can instantiate an interactive debugger to walk through your callout, set break points, invoke the debugger conditionally, introspect variables, etc.
+
+An advanced debug configuration script looks like this:
 
 	context = require("debugContext.js");
 
@@ -68,6 +72,24 @@ An advanced configuration looks like this:
 ## Samples
 
 You will find sample debug configuration, trace file, and JSC Callout in the sampleProxy folder.
+
+## IDE Integration
+
+Our team has successfully integrated this tool with Sublime and Webstorm IDEs - the two most popular options for offline development of Edge artifacts.
+
+For invoking an interactive debugger from sublime via the build command add thie following custom build policy to your configuration:
+	{
+		"cmd": ["node-debug", "--hidden", "", "$file"],
+		"selector": "source.js"
+	}
+
+For a simpler build use:
+	{
+		"cmd": ["node", "$file"],
+		"selector": "source.js"
+	}
+
+Webstorm does not require a custom build, simply invoke the built in node executor for the debug script.
 
 ## Contributing
 
