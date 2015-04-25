@@ -34,7 +34,7 @@ The only prerequisites not handled during the installation are a functional Node
 Advanced features inlcude:
 * jshint of the code "bundle" that comprises the callout (includeURL in the policy defintion and any resources included via the resourceURL entries)
 * diff of MP produced outputs and local produced outputs useful for regression testing changes to ensure they are not breaking existing functionality
-* monitors - set a two monitor points anywhere in your code (monitor("foo")) and the framework will report time to execute and difference in avail memory (consumed memory roughly)
+* monitors - set two monitor points (one before a function or code block and one after) anywhere in your code (monitor("foo");) and the framework will report time to execute and difference in avail memory (consumed memory roughly)
 * inputs - the variables consumed by the callout when executed on the message processor
 * outputs - variables written back to context while executing
 * accesses - the variables the callout made while executing locally
