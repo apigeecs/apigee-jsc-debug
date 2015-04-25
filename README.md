@@ -41,8 +41,9 @@ Advanced features inlcude:
 
 You may also specify that a particular transaction from the trace file be used for the test run. Alternatively you can specify that the test run against all transactions in the trace file. Again useful when doing regression testing.
 
+The onFinish element of the config block gives you the opportunity to call any post execution validation logic you might want. The example below dumps the response.content variable to the console.
 
-The advanced configuration looks like this:
+An advanced configuration looks like this:
 
 	context = require("debugContext.js");
 
@@ -52,7 +53,10 @@ The advanced configuration looks like this:
 	    traceIndex:"all",
 	    //all,monitors,inputs,outputs,accesses,monitors,jshint,errors,diff
 	    results: "monitors,errors,diff",
-	    diff: "all"
+	    diff: "all",
+	    onFinish: function() {
+        	context.echoJson("response.content");
+    	}
 	};
 
 	context.debug(config);
