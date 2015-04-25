@@ -3,11 +3,11 @@ apigee-jsc-debug
 
 A  library providing utility methods to support the execution and debugging of Apigee Edge JSC callout policies on your local machine.
 
-This library requires no addiitonal code in your javascript, and it executes outside the core framework of Edge.
+This library requires no additional code in your javascript, and it executes outside the core framework of Edge.
 
 ## Installation
 
-The only prerequisites not handled during the installation are a functional Node environment and the availabilty of npm. 
+The only prerequisites not handled during the installation are a functional Node environment and the availability of npm. 
 	
 	Clone this repository to your local machine.
 	
@@ -31,8 +31,8 @@ The only prerequisites not handled during the installation are a functional Node
 
 	context.debug(config);
 
-Advanced features inlcude:
-* jshint of the code "bundle" that comprises the callout (includeURL in the policy defintion and any resources included via the resourceURL entries)
+Advanced features include:
+* jshint of the code "bundle" that comprises the callout (includeURL in the policy definition and any resources included via the resourceURL entries)
 * diff of MP produced outputs and local produced outputs useful for regression testing changes to ensure they are not breaking existing functionality
 * monitors - set two monitor points (one before a function or code block and one after) anywhere in your code (monitor("foo");) and the framework will report time to execute and difference in avail memory (consumed memory roughly)
 * inputs - the variables consumed by the callout when executed on the message processor
@@ -71,11 +71,11 @@ An advanced debug configuration script looks like this:
 
 ## Samples
 
-You will find sample debug configuration, trace file, and JSC Callout in the sampleProxy folder.
+You will find sample debug configuration, trace file, and JSC callout in the sampleProxy folder.
 
 ## IDE Integration
 
-Our team has successfully integrated this tool with Sublime and Webstorm IDEs - the two most popular options for offline development of Edge artifacts.
+Our team has successfully integrated this tool with Sublime and Webstorm IDEs - the two most popular options for off-line development of Edge artifacts.
 
 For invoking an interactive debugger from sublime via the build command add the following custom build policy to your configuration:
 	
@@ -97,7 +97,7 @@ Webstorm does not require a custom build, simply invoke the built in node execut
 
 ## Contributing
 
-In lieu of a formal styleguide, take care to maintain the existing coding style.
+In lieu of a formal style guide, take care to maintain the existing coding style.
 Add unit tests for any new or changed functionality. Lint and test your code.
 
 ## Release History
