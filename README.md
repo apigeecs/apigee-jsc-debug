@@ -77,13 +77,15 @@ You will find sample debug configuration, trace file, and JSC Callout in the sam
 
 Our team has successfully integrated this tool with Sublime and Webstorm IDEs - the two most popular options for offline development of Edge artifacts.
 
-For invoking an interactive debugger from sublime via the build command add thie following custom build policy to your configuration:
+For invoking an interactive debugger from sublime via the build command add the following custom build policy to your configuration:
+	
 	{
 		"cmd": ["node-debug", "--hidden", "", "$file"],
 		"selector": "source.js"
 	}
 
 For a simpler build use:
+	
 	{
 		"cmd": ["node", "$file"],
 		"selector": "source.js"
