@@ -1,4 +1,5 @@
-var nums = permutator(context.getVariable("numArray"));
+var inputs = context.getVariable("numArray");
+var nums = permutator(inputs);
 var ops = combinator(3, ['+', '-', '*', '/']);
 var candidates = [];
 var answers = [];
@@ -51,29 +52,26 @@ nums.forEach(function(numArray) {
 
 candidates.forEach(function(candidate) {
     var result = eval(candidate);
-    print(candidate + "=" + result);
     if (result == 24) answers.push(candidate);
 });
 
-//summarize
-print("Candidate results: " + candidates.length);
-print("Possible answers: " + answers.length);
+var result = {
+    numbers: inputs,
+    count: answers.length,
+    answers: answers
+};
 
-answers.forEach(function(answer) {
-    print(answer + "=24");
-});
-
-context.setVariable("response.content",JSON.stringify(answers));
+context.setVariable("response.content", JSON.stringify(result));
 
 
 function permutator(input) {
     var set = [];
+    debugger;
     return permute(input);
 
     function permute(arr, data) {
-        debugger;
         var cur, memo = data || [];
-        if (!arr.splice) arr=arr.slice(",");
+        if (!arr.splice) arr = arr.split(",");
 
         for (var i = 0; i < arr.length; i++) {
             cur = arr.splice(i, 1)[0];
@@ -104,19 +102,18 @@ function uniquePermutator(input) {
 
 function combinator(n, from) {
     var set = [];
-    pick(n, [], 0, from, false, set);
+    pick(n, [], 0, from, set);
     return set;
 
-    function pick(n, got, pos, from, show, result) {
+    function pick(n, got, pos, from, result) {
         var cnt = 0;
         if (got.length == n) {
-            if (show) print(got.join(' '));
             result.push(got.join('').split(''));
             return 1;
         }
         for (var i = pos; i < from.length; i++) {
             got.push(from[i]);
-            cnt += pick(n, got, i, from, show, result);
+            cnt += pick(n, got, i, from, result);
             got.pop();
         }
         return cnt;
