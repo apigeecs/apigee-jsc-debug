@@ -1,5 +1,5 @@
-debugContext
-============
+apigee-jsc-debug
+================
 
 A  library providing utility methods to support the execution and debugging of Apigee Edge JSC callout policies on your local machine.
 
