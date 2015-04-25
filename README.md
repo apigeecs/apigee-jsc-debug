@@ -91,6 +91,8 @@ For a simpler build use:
 		"selector": "source.js"
 	}
 
+Both custom build policies can be copied from the sublime folder in this repo to your Packages/User directory in sublime for your use.
+
 Webstorm does not require a custom build, simply invoke the built in node executor for the debug script.
 
 ## Contributing

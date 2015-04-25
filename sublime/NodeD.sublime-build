@@ -1,0 +1,4 @@
+{
+"cmd": ["node-debug", "--hidden", "", "$file"],
+"selector": "source.js"
+}
