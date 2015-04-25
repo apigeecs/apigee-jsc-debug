@@ -16,9 +16,9 @@ The implementation is lightly tested and has numerous bugs including not account
 
 ## Installation
 
-There is a zip bundle in the targets directory that can be uploaded to edge. Through the UI console.
+There is a zip bundle in the targets directory that can be uploaded to Edge. Through the UI console.
 
-As well, you can edit the POM files and use Maven to deploy. More information on using Maven to deploy edge proxies can be found at: 
+As well, you can edit the POM files and use Maven to deploy. More information on using Maven to deploy Edge proxies can be found at: 
 https://github.com/apigee/apigee-deploy-maven-plugin
 
 Alternatively, you can simply hit the API at http://davidwallen2014-test.apigee.net/24solver?numbers=1,1,24,24 if you want to play with it.
