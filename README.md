@@ -126,7 +126,7 @@ For invoking an interactive debugger from sublime via the build command add the 
 		"selector": "source.js"
 	}
 
-For a simpler build use:
+For a simple build/run use:
 	
 	{
 		"cmd": ["node", "$file"],

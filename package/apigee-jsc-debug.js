@@ -109,7 +109,7 @@ var runControl = function(config) {
             execute(config);
             if (config.silent !== true) echoJson(results);
         }
-    } else {
+    } else if (!config.done) {
         //load variables if we are using a traceFile
         if (config.traceFile) {
             if (config.debug) print("executing applyTraceSet");
@@ -117,6 +117,7 @@ var runControl = function(config) {
         }
         execute(config);
         if (config.silent !== true) echoJson(results);
+        config.done = true;
     }
 };
 
