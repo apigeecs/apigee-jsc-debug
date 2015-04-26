@@ -9,16 +9,24 @@ This library requires no additional code in your javascript, and it executes out
 
 The only prerequisites not handled during the installation are a functional Node environment and the availability of npm. 
 	
-	Clone this repository to your local machine.
-	
+Clone this repository to your local machine:
+
+	ApigeeCorporation$ git clone https://github.com/apigeecs/apigee-jsc-debug.git
+
+Navigate to the package directory:
+
 	cd path/to/apigee-jsc-debug/package/
+
+Install globally:
+
 	sudo npm install . -g
 
-	to install into a project tests/debug directory
+Or to install into a project tests/debug directory:
+
 	cd ../project/gateway/apiproxy/tests/debug/
 	sudo install /path/to/apigee-jsc-debug/package/
 
-	Installation from git coming soon...
+Installation from git coming soon...
 
 ## Usage
 
