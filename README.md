@@ -58,11 +58,11 @@ An advanced debug configuration script looks like this:
 	context = require("debugContext.js");
 
 	var config = {
-	    policy: "jsMediationTest",
+	    policy: "jsCalculate",
 	    traceFile: "./trace-files/trace-1234.xml",
 	    traceIndex:"all",
 	    //all,monitors,inputs,outputs,accesses,monitors,jshint,errors,diff
-	    results: "monitors,errors,diff",
+	    results: "monitors,outputs,errors,jshint",
 	    diff: "all",
 	    onFinish: function() {
         	context.echoJson("response.content");
@@ -70,6 +70,34 @@ An advanced debug configuration script looks like this:
 	};
 
 	context.debug(config);
+
+Output from the script includes a JSON results object of the form:
+	
+	{
+	    "policy": "jsCalculate",
+	    "traceIndex": 0,
+	    "monitors": {
+	        "mpExecutionTime": "55 milliseconds",
+	        "jsCalculate": {
+	            "time": "126 milliseconds",
+	            "memory": "6.92 mb"
+	        }
+	    },
+	    "outputs": {
+	        "response.content": "{\"numbers\":\"1,2,4,6\",\"count\":20,\"answers\":[\"(2-1)*4*6\",\"(2-1)*(4*6)\",\"(2-1)*6*4\",\"(2-1)*(6*4)\",\"(2+6)*(4-1)\",\"(4-1)*(2+6)\",\"(4-1)*(6+2)\",\"4*(2-1)*6\",\"4/(2-1)*6\",\"(4*6)*(2-1)\",\"4*6*(2-1)\",\"(4*6)/(2-1)\",\"4*6/(2-1)\",\"6*(2-1)*4\",\"6/(2-1)*4\",\"(6+2)*(4-1)\",\"(6*4)*(2-1)\",\"6*4*(2-1)\",\"(6*4)/(2-1)\",\"6*4/(2-1)\"]}"
+	    },
+	    "jshint": {
+	        "errors": [{
+	            "id": "(error)",
+	            "evidence": "    var result = eval(candidate);",
+	            "line": "../../apiproxy/resources/jsc/jsCalculate.js:54:18",
+	            "reason": "eval can be harmful."
+	        }]
+	    }
+	}
+	[Finished in 0.6s]
+
+As you can see, this particular callout is doing an eval - typically not a good idea. JSHint makes sure we know that!
 
 ## Tests
 
