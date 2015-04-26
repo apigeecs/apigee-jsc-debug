@@ -22,6 +22,8 @@ The only prerequisites not handled during the installation are a functional Node
 
 ## Usage
 
+Within a folder off your tests directory called debug (for example: /Users/ApigeeCorporation/Projects/apigee-jsc-debug/sampleProxy/tests/debug) you create scripts as follows:
+
 	context = require("apigee-jsc-debug");
 
 	var config = {	
@@ -30,6 +32,10 @@ The only prerequisites not handled during the installation are a functional Node
 	};
 
 	context.debug(config);
+
+These scripts can be executed within your IDE or from a command prompt as follows: 
+
+	ApigeeCorporation$ node ./debug-foo.js
 
 Advanced features include:
 * jshint of the code "bundle" that comprises the callout (includeURL in the policy definition and any resources included via the resourceURL entries)

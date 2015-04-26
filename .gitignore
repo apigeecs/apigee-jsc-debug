@@ -1,0 +1,16 @@
+npm-debug.log
+
+
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+#paths
+bin
+.classpath
+.project
+.settings
+node_modules
