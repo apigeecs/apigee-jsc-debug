@@ -137,6 +137,10 @@ Both custom build policies can be copied from the sublime folder in this repo to
 
 Webstorm does not require a custom build, simply invoke the built in node executor for the debug script.
 
+## Security Thoughts
+
+Think twice about putting trace files into a repository. We include them in our sample as a means of demonstrating the framework, but consider that tracefiles have a wealth of implementation details including API keys, target credentials, and the like. 
+
 ## Contributing
 
 In lieu of a formal style guide, take care to maintain the existing coding style.
