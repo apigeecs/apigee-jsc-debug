@@ -15,22 +15,22 @@ Clone this repository to your local machine:
 
 Navigate to the package directory:
 
-	cd path/to/apigee-jsc-debug/package/
+	ApigeeCorporation$ cd path/to/apigee-jsc-debug/package/
 
 Install globally:
 
-	sudo npm install . -g
+	ApigeeCorporation$ sudo npm install . -g
 
 Or to install into a project tests/debug directory:
 
-	cd ../project/gateway/apiproxy/tests/debug/
-	sudo install /path/to/apigee-jsc-debug/package/
+	ApigeeCorporation$ cd ../project/gateway/apiproxy/tests/debug/
+	ApigeeCorporation$ sudo install /path/to/apigee-jsc-debug/package/
 
 Installation from git coming soon...
 
 ## Usage
 
-Within a folder off your tests directory called debug (for example: /Users/ApigeeCorporation/Projects/apigee-jsc-debug/sampleProxy/tests/debug) you create scripts as follows:
+Within a folder off your tests directory called debug (for example: /Users/ApigeeCorporation/Projects/apigee-jsc-debug/sampleProxy/tests/debug) you create a script as follows:
 
 	context = require("apigee-jsc-debug");
 
