@@ -461,31 +461,33 @@ function getScriptCode(policyName) {
     //extract the resources
     files.some(function(policy) {
         //read the policy file
-        data = fs.readFileSync(baseDir + "/" + policy, 'utf8');
-        if (parser.parseString(data, function(err, result) {
-            if (result.Javascript && result.Javascript.$.name === policyName) {
-                if (result.Javascript.IncludeURL) {
-                    result.Javascript.IncludeURL.forEach(function(includeURL) {
-                        script = {};
-                        script.path = "../../apiproxy/resources/jsc/" + includeURL.substring(6);
-                        script.code = fs.readFileSync(script.path, 'utf-8');
-                        script.numLines = script.code.split("\n").length - 1;
-                        scripts.push(script);
+        if (policy.indexOf(".xml") != -1) {
+            data = fs.readFileSync(baseDir + "/" + policy, 'utf8');
+            if (parser.parseString(data, function (err, result) {
+                if (result.Javascript && result.Javascript.$.name === policyName) {
+                    if (result.Javascript.IncludeURL) {
+                        result.Javascript.IncludeURL.forEach(function (includeURL) {
+                            script = {};
+                            script.path = "../../apiproxy/resources/jsc/" + includeURL.substring(6);
+                            script.code = fs.readFileSync(script.path, 'utf-8');
+                            script.numLines = script.code.split("\n").length - 1;
+                            scripts.push(script);
+                        });
+                    }
+
+                    script = {};
+                    script.path = "../../apiproxy/resources/jsc/" + result.Javascript.ResourceURL[0].substring(6);
+                    script.code = "debugger;" + fs.readFileSync(script.path, 'utf-8');
+                    script.numLines = script.code.split("\n").length - 1;
+                    scripts.push(script);
+
+                    scripts.forEach(function (script) {
+                        code += script.code;
                     });
                 }
-
-                script = {};
-                script.path = "../../apiproxy/resources/jsc/" + result.Javascript.ResourceURL[0].substring(6);
-                script.code = "debugger;" + fs.readFileSync(script.path, 'utf-8');
-                script.numLines = script.code.split("\n").length - 1;
-                scripts.push(script);
-
-                scripts.forEach(function(script) {
-                    code += script.code;
-                });
-            }
-        }));
+            }));
         if (code) return true;
+        }
     });
     return code;
 }
