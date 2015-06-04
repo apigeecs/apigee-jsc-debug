@@ -170,7 +170,9 @@ var execute = function(config) {
         }
 
         if (config.diff) _diff(config, results);
-
+    }
+    if (config.onFinish) config.onFinish();
+    if (config.results) {
         //all,monitors,inputs,outputs,accesses,monitors
         if (config.results != "all") {
             if (config.results.indexOf("monitors") == -1) delete results.monitors;
@@ -183,7 +185,6 @@ var execute = function(config) {
             if (config.results.indexOf("mpOutputs") == -1) delete results.mpOutputs;
         }
     }
-    if (config.onFinish) config.onFinish();
 };
 
 var applyTraceSet = function(traceSet) {
@@ -463,10 +464,10 @@ function getScriptCode(policyName) {
         //read the policy file
         if (policy.indexOf(".xml") != -1) {
             data = fs.readFileSync(baseDir + "/" + policy, 'utf8');
-            if (parser.parseString(data, function (err, result) {
+            if (parser.parseString(data, function(err, result) {
                 if (result.Javascript && result.Javascript.$.name === policyName) {
                     if (result.Javascript.IncludeURL) {
-                        result.Javascript.IncludeURL.forEach(function (includeURL) {
+                        result.Javascript.IncludeURL.forEach(function(includeURL) {
                             script = {};
                             script.path = "../../apiproxy/resources/jsc/" + includeURL.substring(6);
                             script.code = fs.readFileSync(script.path, 'utf-8');
@@ -481,12 +482,12 @@ function getScriptCode(policyName) {
                     script.numLines = script.code.split("\n").length - 1;
                     scripts.push(script);
 
-                    scripts.forEach(function (script) {
+                    scripts.forEach(function(script) {
                         code += script.code;
                     });
                 }
             }));
-        if (code) return true;
+            if (code) return true;
         }
     });
     return code;
