@@ -526,7 +526,7 @@ function processXMLTraceFileCacheHit(config) {
                 props[property.$.name] = property.$text;
             });
             if (step.timeStamp) {
-                if (!req.responseCache) req.responseCache = [];
+                if (!req.cacheResponse) req.cacheResponse = [];
                 if (step.enforcement === "response" && step.l1Count.length > 1) {
                     step.added = step.l1Count[0] !== step.l1Count[1];
                 }
@@ -539,7 +539,7 @@ function processXMLTraceFileCacheHit(config) {
                     //and see if we added that one
                     //if so set step.previouslySeen=true;
                     results.requests.some(function(prevReq) {
-                        if (prevReq.responseCache.some(function(prevStep) {
+                        if (prevReq.cacheResponse.some(function(prevStep) {
                             if (prevStep.cacheKey === step.cacheKey) {
                                 step.previouslySeen = true;
                                 step.previouslySeenAt=prevStep.timeStamp;
@@ -550,13 +550,13 @@ function processXMLTraceFileCacheHit(config) {
                         })) return true;
                     });
                 }
-                req.responseCache.push(step);
+                req.cacheResponse.push(step);
                 step = {};
             }
 
             if (props.From === "REQ_START") {
                 if (!results.requests) results.requests = [];
-                if (req.responseCache) results.requests.push(req);
+                if (req.cacheResponse) results.requests.push(req);
                 req = {};
                 req.uri = point.RequestMessage.URI.$text;
                 req.verb = point.RequestMessage.Verb.$text;
@@ -578,7 +578,6 @@ function processXMLTraceFileCacheHit(config) {
                 step.expression = props.expression;
                 step.expressionResult = props.expressionResult;
                 step.enforcement = props.enforcement;
-                step.stepDefinitionName = props["stepDefinition-name"];
                 step.timeStamp = props.timeStamp;
             }
             if (!req.uri && point.RequestMessage) {
