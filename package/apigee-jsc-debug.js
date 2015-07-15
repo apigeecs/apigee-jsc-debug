@@ -72,20 +72,28 @@ var debugPolicy = function(policyName) {
 var debug = function(config, cb) {
     //callback based path through
     //the process routines pass control to runControl
-    if (config.debug) print("loading script code");
-    config.code = getScriptCode(config.policy);
-    if (config.traceFile) {
-        if (!config.traceIndex) config.traceIndex = 0;
-        if (config.traceFile.indexOf(".xml") > -1) {
-            if (config.debug) print("loading xml tracefile");
-            processXMLTraceFile(config);
-        } else {
-            if (config.debug) print("loading json tracefile");
-            processJSONTraceFile(config);
-        }
+    if (config.mode === "cacheHit") {
+        //we are doing a cacheHit analysis
+        //iterate through the trace file and gather all of the request URLs, sequence number
+        if (config.debug) print("loading xml tracefile for cache hit");
+        processXMLTraceFileCacheHit(config);
+
     } else {
-        //we can call runControl directly as we don't have a trace file
-        runControl(config);
+        if (config.debug) print("loading script code");
+        config.code = getScriptCode(config.policy);
+        if (config.traceFile) {
+            if (!config.traceIndex) config.traceIndex = 0;
+            if (config.traceFile.indexOf(".xml") > -1) {
+                if (config.debug) print("loading xml tracefile");
+                processXMLTraceFile(config);
+            } else {
+                if (config.debug) print("loading json tracefile");
+                processJSONTraceFile(config);
+            }
+        } else {
+            //we can call runControl directly as we don't have a trace file
+            runControl(config);
+        }
     }
 };
 
@@ -491,6 +499,117 @@ function getScriptCode(policyName) {
         }
     });
     return code;
+}
+
+function processXMLTraceFileCacheHit(config) {
+    var XmlStream = require('xml-stream'),
+        stream = fs.createReadStream(config.traceFile),
+        xml = new XmlStream(stream),
+        count = 0;
+
+    xml.preserve('Point', true);
+    xml.preserve('DebugInfo', true);
+    xml.preserve('Properties', true);
+    xml.preserve('Property', true);
+    xml.collect('Property');
+    xml.collect('Get');
+    xml.collect('Set');
+
+    var req = {},
+        step = {};
+
+    xml.on('endElement: Point', function(point) {
+        if (point.$.id === "StateChange" && point.RequestMessage) {
+            //<Property name="From">REQ_START</Property>
+            var props = {};
+            point.DebugInfo.Properties.Property.forEach(function(property) {
+                props[property.$.name] = property.$text;
+            });
+            if (step.timeStamp) {
+                if (!req.responseCache) req.responseCache = [];
+                if (step.enforcement === "response" && step.l1Count.length > 1) {
+                    step.added = step.l1Count[0] !== step.l1Count[1];
+                }
+                step.previouslySeen = false;
+                if (results.requests) {
+                    debugger;
+                    //scan previous entries in requests
+                    //look at response side
+                    //see if we get a cacheKey match
+                    //and see if we added that one
+                    //if so set step.previouslySeen=true;
+                    results.requests.some(function(prevReq) {
+                        if (prevReq.responseCache.some(function(prevStep) {
+                            if (prevStep.cacheKey === step.cacheKey) {
+                                step.previouslySeen = true;
+                                step.previouslySeenAt=prevStep.timeStamp;
+                                if (prevStep.added)
+                                    step.previouslyAdded = true;
+                                return true;
+                            }
+                        })) return true;
+                    });
+                }
+                req.responseCache.push(step);
+                step = {};
+            }
+
+            if (props.From === "REQ_START") {
+                if (!results.requests) results.requests = [];
+                if (req.responseCache) results.requests.push(req);
+                req = {};
+                req.uri = point.RequestMessage.URI.$text;
+                req.verb = point.RequestMessage.Verb.$text;
+            }
+        } else if (point.DebugInfo && point.DebugInfo.Properties && point.DebugInfo.Properties.Property) {
+            var props = {};
+            props.timeStamp = point.DebugInfo.Timestamp.$text;
+            point.DebugInfo.Properties.Property.forEach(function(property) {
+                props[property.$.name] = property.$text;
+            });
+
+            if (props["responsecache.cacheResponse.cachekey"]) {
+                step.cacheKey = props["responsecache.cacheResponse.cachekey"];
+                step.cacheHit = props["responsecache.cacheResponse.cachehit"];
+            }
+
+            if (props["stepDefinition-type"] === "responsecache" && props.expressionResult === "true") {
+                //we want to store this step and these props
+                step.expression = props.expression;
+                step.expressionResult = props.expressionResult;
+                step.enforcement = props.enforcement;
+                step.stepDefinitionName = props["stepDefinition-name"];
+                step.timeStamp = props.timeStamp;
+            }
+            if (!req.uri && point.RequestMessage) {
+                req.uri = point.RequestMessage.URI.$text;
+                req.verb = point.RequestMessage.Verb.$text;
+            };
+        }
+        if (point.VariableAccess && point.VariableAccess.Set) {
+            var vars = {};
+            point.VariableAccess.Set.forEach(function(varAccess) {
+                var key = vars[varAccess.$.name];
+                if (vars[varAccess.$.name]) {
+                    vars[varAccess.$.name] = [vars[varAccess.$.name]];
+                }
+                if (vars[varAccess.$.name] && vars[varAccess.$.name].length)
+                    vars[varAccess.$.name].push(varAccess.$.value);
+                else vars[varAccess.$.name] = varAccess.$.value;
+            });
+            if (vars["responsecache.cachekey"]) step.cacheKey = vars["responsecache.cachekey"];
+            if (vars["responsecache.l1.count"]) step.l1Count = vars["responsecache.l1.count"];
+            if (vars["responsecache.l1.count_2"]) step.l1CountAfter = vars["responsecache.l1.count_2"];
+        }
+    });
+
+    xml.on('end', function() {
+        if (!results.requests) results.requests = [];
+        results.requests.push(req);
+        if (config.silent !== true) echoJson(results);
+
+        //analyzeCacheHit(config);
+    });
 }
 
 module.exports = {
