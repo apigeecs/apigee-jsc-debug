@@ -1,4 +1,4 @@
-context = require("../../../../package/apigee-jsc-debug");
+context = require("apigee-jsc-debug");
 
 var config = {
     policy: "jsCalculate",

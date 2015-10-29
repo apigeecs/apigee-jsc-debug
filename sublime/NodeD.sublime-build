@@ -1,4 +1,5 @@
 {
 "cmd": ["node-debug", "--hidden", "", "$file"],
-"selector": "source.js"
+"selector": "source.js",
+"path" : "/usr/local/bin:$PATH"
 }
