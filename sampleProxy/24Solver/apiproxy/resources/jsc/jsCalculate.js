@@ -4,7 +4,7 @@ var ops = combinator(3, ['+', '-', '*', '/']);
 var candidates = [];
 var answers = [];
 
-fixme++;
+//fixme++;
 
 //ops need to be expanded out to the permutations
 var permutatedOps = [];
@@ -23,7 +23,9 @@ ops.forEach(function(op) {
             if (add) addOps.push(candOp);
         } else addOps.push(candOp);
     });
+    monitor('permops');
     permutatedOps.push(addOps);
+    monitor('permops');
 });
 
 //for each set of nums

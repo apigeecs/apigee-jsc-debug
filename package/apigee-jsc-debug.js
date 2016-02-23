@@ -28,6 +28,7 @@ var setVariable = function(n, v, m) {
 
 var getVariable = function(n) {
     //if n has dot notation then we need to treat it as json
+    debugger;
     if (n.indexOf("[") > -1 || n.indexOf("]") > -1)
         throw new Error("Context Error: Array notation is not retrievable from getVariable");
 
@@ -80,7 +81,15 @@ var debug = function(config, cb) {
 
     } else {
         if (config.debug) print("loading script code");
-        config.code = getScriptCode(config.policy);
+        //we want to also preload any of the dependencies
+        config.code = "";
+        debugger;
+        if (config.dependencies) {
+            config.dependencies.forEach(function(dependency) {
+                config.code += getScriptCode(dependency);
+            });
+        }
+        config.code += getScriptCode(config.policy);
         if (config.traceFile) {
             if (!config.traceIndex) config.traceIndex = 0;
             if (config.traceFile.indexOf(".xml") > -1) {
@@ -418,24 +427,24 @@ function processJSONTraceFile(config) {
     trace.some(function(call) {
         if (call.point)
             if (call.point.some(function(entry) {
-                if (entry.id === "Execution") {
-                    if (entry.results)
-                        if (entry.results.some(function(execution) {
-                            if (execution.ActionResult && execution.ActionResult === "DebugInfo") {
-                                //now we need to check if this one matches our policyName in the property array
-                                execution.properties.property.some(function(prop) {
-                                    if (prop.name === "stepDefinition-name" && prop.value === config.policy) {
-                                        step = entry;
-                                        return true;
-                                    } else if (!step && prop.name === "javascript-executionTime") {
-                                        if (!results.monitors) results.monitors = {};
-                                        results.monitors.mpExecutionTime = prop.value + " milliseconds";
+                    if (entry.id === "Execution") {
+                        if (entry.results)
+                            if (entry.results.some(function(execution) {
+                                    if (execution.ActionResult && execution.ActionResult === "DebugInfo") {
+                                        //now we need to check if this one matches our policyName in the property array
+                                        execution.properties.property.some(function(prop) {
+                                            if (prop.name === "stepDefinition-name" && prop.value === config.policy) {
+                                                step = entry;
+                                                return true;
+                                            } else if (!step && prop.name === "javascript-executionTime") {
+                                                if (!results.monitors) results.monitors = {};
+                                                results.monitors.mpExecutionTime = prop.value + " milliseconds";
+                                            }
+                                        });
                                     }
-                                });
-                            }
-                        })) return true;
-                }
-            })) return true;
+                                })) return true;
+                    }
+                })) return true;
     });
 
     if (step && step.results) {
@@ -473,28 +482,28 @@ function getScriptCode(policyName) {
         if (policy.indexOf(".xml") != -1) {
             data = fs.readFileSync(baseDir + "/" + policy, 'utf8');
             if (parser.parseString(data, function(err, result) {
-                if (result.Javascript && result.Javascript.$.name === policyName) {
-                    if (result.Javascript.IncludeURL) {
-                        result.Javascript.IncludeURL.forEach(function(includeURL) {
-                            script = {};
-                            script.path = "../../apiproxy/resources/jsc/" + includeURL.substring(6);
-                            script.code = fs.readFileSync(script.path, 'utf-8');
-                            script.numLines = script.code.split("\n").length - 1;
-                            scripts.push(script);
+                    if (result.Javascript && result.Javascript.$.name === policyName) {
+                        if (result.Javascript.IncludeURL) {
+                            result.Javascript.IncludeURL.forEach(function(includeURL) {
+                                script = {};
+                                script.path = "../../apiproxy/resources/jsc/" + includeURL.substring(6);
+                                script.code = fs.readFileSync(script.path, 'utf-8');
+                                script.numLines = script.code.split("\n").length - 1;
+                                scripts.push(script);
+                            });
+                        }
+
+                        script = {};
+                        script.path = "../../apiproxy/resources/jsc/" + result.Javascript.ResourceURL[0].substring(6);
+                        script.code = "debugger;" + fs.readFileSync(script.path, 'utf-8');
+                        script.numLines = script.code.split("\n").length - 1;
+                        scripts.push(script);
+
+                        scripts.forEach(function(script) {
+                            code += script.code;
                         });
                     }
-
-                    script = {};
-                    script.path = "../../apiproxy/resources/jsc/" + result.Javascript.ResourceURL[0].substring(6);
-                    script.code = "debugger;" + fs.readFileSync(script.path, 'utf-8');
-                    script.numLines = script.code.split("\n").length - 1;
-                    scripts.push(script);
-
-                    scripts.forEach(function(script) {
-                        code += script.code;
-                    });
-                }
-            }));
+                }));
             if (code) return true;
         }
     });
@@ -540,14 +549,14 @@ function processXMLTraceFileCacheHit(config) {
                     //if so set step.previouslySeen=true;
                     results.requests.some(function(prevReq) {
                         if (prevReq.cacheResponse.some(function(prevStep) {
-                            if (prevStep.cacheKey === step.cacheKey) {
-                                step.previouslySeen = true;
-                                step.previouslySeenAt=prevStep.timeStamp;
-                                if (prevStep.added)
-                                    step.previouslyAdded = true;
-                                return true;
-                            }
-                        })) return true;
+                                if (prevStep.cacheKey === step.cacheKey) {
+                                    step.previouslySeen = true;
+                                    step.previouslySeenAt = prevStep.timeStamp;
+                                    if (prevStep.added)
+                                        step.previouslyAdded = true;
+                                    return true;
+                                }
+                            })) return true;
                     });
                 }
                 req.cacheResponse.push(step);
