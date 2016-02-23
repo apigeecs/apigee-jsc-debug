@@ -28,7 +28,6 @@ var setVariable = function(n, v, m) {
 
 var getVariable = function(n) {
     //if n has dot notation then we need to treat it as json
-    debugger;
     if (n.indexOf("[") > -1 || n.indexOf("]") > -1)
         throw new Error("Context Error: Array notation is not retrievable from getVariable");
 
@@ -83,7 +82,6 @@ var debug = function(config, cb) {
         if (config.debug) print("loading script code");
         //we want to also preload any of the dependencies
         config.code = "";
-        debugger;
         if (config.dependencies) {
             config.dependencies.forEach(function(dependency) {
                 config.code += getScriptCode(dependency);
@@ -541,7 +539,6 @@ function processXMLTraceFileCacheHit(config) {
                 }
                 step.previouslySeen = false;
                 if (results.requests) {
-                    debugger;
                     //scan previous entries in requests
                     //look at response side
                     //see if we get a cacheKey match

@@ -107,6 +107,68 @@ Output from the script includes a JSON results object of the form:
 
 As you can see, this particular callout is doing an eval - typically not a good idea. JSHint makes sure we know that!
 
+We have seen some customers using a novel approach to creating reusable library javascript functions. These customers are defining the reusable object and saving it to context as in the following example:
+
+	var calculator = {
+	    "objName": "calculator",
+	    "random": Math.random(),
+	    "start": new Date(),
+	    "calculate": function getPrimes(max) {
+	        var sieve = [],
+	            i, j, primes = [];
+	        for (i = 2; i <= max; ++i) {
+	            if (!sieve[i]) {
+	                // i has not been marked -- it is prime
+	                primes.push(i);
+	                for (j = i << 1; j <= max; j += i) {
+	                    sieve[j] = true;
+	                }
+	            }
+	        }
+	        return primes;
+	    }
+	}
+
+	context.setVariable("calculator", calculator);
+
+Then later retrieving this object for use in another javascript resource callout as in:
+
+	var contextCalculator = (context.getVariable("calculator"));
+
+	var response = {
+	    "start": contextCalculator.start,
+	    "primes": contextCalculator.calculate(context.getVariable("upperbound")),
+	    "stop": new Date(),
+	    "duration": new Date() - contextCalculator.start
+	};
+
+	console.log(contextCalculator);
+
+	context.setVariable("jsCalculateFromContextResults", JSON.stringify(response));
+
+This breaks the jsc-debug tool because we rely on the taceAPI to provide us values for variable accesses. The current implementation of the trace API from Apigee returns [Object object] on any complex variable access.
+
+Generally we do not recommend the above approach for maintining/accessing reusable objects in flows preferring to use the IncludeURL option in your Javascript Resource Callout policy understanding that in some circumstances the cost to initialize the object may be high and if use of the utility is greater than 1 that you may benefit from saving the initialized object rather than reinitializing for every subsequent use.
+
+With that in mind we now support dependencies in the config of a debug session as in this example:
+
+	var config = {
+	   policy: "jsCalculateFromContext",
+	   dependencies: ["jsPrepCalculator"],
+	   traceFile: "./trace-files/trace-1456259845808.xml",
+	   //all,monitors,inputs,outputs,accesses,monitors
+	   results: "monitors,outputs,errors,jshint",
+	   debug: true,
+	   traceIndex: "all",
+	   onFinish: function() {
+	       context.echoJson("response.content");
+	   }
+	};
+
+	context.debug(config);
+
+The fucntion "jsPrepCalcualtor" will be utilized to precalculate and store any values required by the subsequent jsCalculateFromContext policy execution.
+
 ## Tests
 
   none yet
