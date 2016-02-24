@@ -148,7 +148,7 @@ Then later retrieving this object for use in another javascript resource callout
 
 This breaks the jsc-debug tool because we rely on the trace API to provide us values for variable accesses. The current implementation of the trace API from Apigee returns [Object object] on any complex variable access.
 
-Generally we do not recommend the above approach for maintining/accessing reusable objects in flows preferring to use the IncludeURL option in your Javascript Resource Callout policy understanding that in some circumstances the cost to initialize the object may be high and if use of the utility is greater than 1 that you may benefit from saving the initialized object rather than reinitializing for every subsequent use.
+Generally we do not recommend the above approach for building and accessing reusable objects in flows. The preferred approach is to use the IncludeURL option in your Javascript Resource Callout policy. We say this understanding that in some circumstances the cost to initialize the object may be high and if use of the utility is greater than 1 that you may benefit from saving the initialized object rather than reinitializing for every subsequent use.
 
 With that in mind we now support dependencies in the config of a debug session as in this example:
 
