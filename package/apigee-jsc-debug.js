@@ -6,7 +6,7 @@ var variables = {},
     traceSets = [],
     scripts = [],
     fs = require('fs'),
-    xml2js = require('/Users/davidallen/.npm_modules/lib/node_modules/xml2js'),
+    xml2js = require('xml2js'),
     runControl, execute, config, printDebug, monitor, applyTraceSet, processExecutionTime, processVariableAccess;
 
 var debug = function(configP) {
@@ -213,7 +213,7 @@ execute = function(config) {
     if (config.results) {
         if (config.results === "all" || config.results.indexOf("jshint") !== -1) {
             printDebug("jshinting");
-            var jshint = require('/Users/davidallen/.npm_modules/lib/node_modules/jshint');
+            var jshint = require('jshint');
             if (!jshint.JSHINT(config.code)) {
                 results.jshint = {};
                 var errors = jshint.JSHINT.errors;
@@ -382,7 +382,7 @@ function diff(a, b) {
             };
         }
         if (!jsdiff) {
-            jsdiff = require('/Users/davidallen/.npm_modules/lib/node_modules/diff');
+            jsdiff = require('diff');
         }
         return jsdiff.diffWords(a, b);
     }
@@ -440,7 +440,7 @@ function getFileLineDescription(lineNumber) {
 }
 
 function processXMLTraceFile(config) {
-    var XmlStream = require('/Users/davidallen/.npm_modules/lib/node_modules/xml-stream'),
+    var XmlStream = require('xml-stream'),
         stream = fs.createReadStream(config.traceFile),
         xml = new XmlStream(stream),
         count = 0;
@@ -625,7 +625,7 @@ function getScriptCode(policyName) {
 }
 
 function processXMLTraceFileCacheHit(config) {
-    var XmlStream = require('/Users/davidallen/.npm_modules/lib/node_modules/xml-stream'),
+    var XmlStream = require('xml-stream'),
         stream = fs.createReadStream(config.traceFile),
         xml = new XmlStream(stream),
         props;
