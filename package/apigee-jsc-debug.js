@@ -189,7 +189,7 @@ var execute = function(config) {
         }
 
         if (config.results) {
-            if (config.results === "all" || config.results.indexOf("jshint") != -1) {
+            if (config.results === "all" || config.results.indexOf("jshint") !== -1) {
                 if (config.debug) print("jshinting");
                 var jshint = require('jshint');
                 if (!jshint.JSHINT(config.code)) {
@@ -222,7 +222,7 @@ var execute = function(config) {
         }
         if (config.results) {
             //all,monitors,inputs,outputs,accesses,monitors
-            if (config.results != "all") {
+            if (config.results !== "all") {
                 if (config.results.indexOf("monitors") == -1) {
                     delete results.monitors;
                 }
@@ -343,7 +343,7 @@ var execute = function(config) {
 
         function diff(a, b) {
             //handle different types of things differnetly
-            if (a != b) {
+            if (a !== b) {
                 if (typeof a === "number") {
                     return {
                         error: "numbers do not match " + a + ":" + b
@@ -556,7 +556,7 @@ var execute = function(config) {
             //extract the resources
             files.some(function(policy) {
                 //read the policy file
-                if (policy.indexOf(".xml") != -1) {
+                if (policy.indexOf(".xml") !== -1) {
                     data = fs.readFileSync(baseDir + "/" + policy, 'utf8');
                     if (parser.parseString(data, function(err, result) {
                             if (result.Javascript && result.Javascript.$.name === policyName) {

@@ -211,3 +211,5 @@ Add unit tests for any new or changed functionality. Lint and test your code.
 ## Release History
 
 * 0.1.0 Initial release
+
+[![Codacy Badge](https://api.codacy.com/project/badge/grade/fd6f4c8f66934b9f936d8f3cad21544a)](https://www.codacy.com/app/dallen/apigee-jsc-debug)
