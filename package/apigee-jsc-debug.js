@@ -4,8 +4,9 @@ var variables = {},
     results = {},
     monitors = {},
     traceSets = [],
+    scripts = [],
     fs = require('fs'),
-    xml2js = require('xml2js'),
+    xml2js = require('/Users/davidallen/.npm_modules/lib/node_modules/xml2js'),
     runControl, execute, config, printDebug, monitor, applyTraceSet;
 
 var debug = function(configP) {
@@ -212,7 +213,7 @@ execute = function(config) {
     if (config.results) {
         if (config.results === "all" || config.results.indexOf("jshint") !== -1) {
             printDebug("jshinting");
-            var jshint = require('jshint');
+            var jshint = require('/Users/davidallen/.npm_modules/lib/node_modules/jshint');
             if (!jshint.JSHINT(config.code)) {
                 results.jshint = {};
                 var errors = jshint.JSHINT.errors;
@@ -377,7 +378,7 @@ function diff(a, b) {
             };
         }
         if (!jsdiff) {
-            jsdiff = require('diff');
+            jsdiff = require('/Users/davidallen/.npm_modules/lib/node_modules/diff');
         }
         return jsdiff.diffWords(a, b);
     }
@@ -435,7 +436,7 @@ function getFileLineDescription(lineNumber) {
 }
 
 function processXMLTraceFile(config) {
-    var XmlStream = require('xml-stream'),
+    var XmlStream = require('/Users/davidallen/.npm_modules/lib/node_modules/xml-stream'),
         stream = fs.createReadStream(config.traceFile),
         xml = new XmlStream(stream),
         count = 0;
@@ -454,60 +455,57 @@ function processXMLTraceFile(config) {
             if (point.DebugInfo) {
                 point.DebugInfo.Properties.Property.some(function(property) {
                     if ((property.$.name === "stepDefinition-name") && property.$text === config.policy) {
-                        process = true;
+
+                        printDebug("examining " + config.policy + " point at " + count);
+
+                        if (count === config.traceIndex || config.traceIndex === "all") {
+                            printDebug("processing " + config.policy + " point at " + count);
+
+                            var traceSet = {
+                                variables: {},
+                                mpOutputs: {}
+                            };
+                            printDebug("examining properties to get mpExecutionTime");
+
+                            point.DebugInfo.Properties.Property.some(function(property) {
+                                if (property.$.name === "javascript-executionTime") {
+                                    traceSet.mpExecutionTime = property.$text + " milliseconds";
+                                    return true;
+                                }
+                            });
+
+                            if (point.VariableAccess) {
+                                printDebug("processing variables");
+
+                                if (point.VariableAccess.Get) {
+                                    point.VariableAccess.Get.forEach(function(variable) {
+                                        traceSet.variables[variable.$.name] = variable.$.value;
+                                    });
+                                }
+                                if (point.VariableAccess.Set) {
+                                    point.VariableAccess.Set.forEach(function(variable) {
+                                        traceSet.mpOutputs[variable.$.name] = variable.$.value;
+                                    });
+                                }
+                            }
+
+                            traceSets.push(traceSet);
+                            count++;
+                            if (count > config.traceIndex) {
+                                printDebug("closing file stream to tracefile");
+                                stream.close();
+                                //end may not get called when the underlying stream closes
+                                runControl(config);
+                            }
+                        } else {
+                            printDebug("skipping " + config.policy + " point at " + count);
+                            count++;
+                        }
                         return true;
                     }
                 });
             }
 
-            if (process) {
-                printDebug("examining " + config.policy + " point at " + count);
-
-                if (count === config.traceIndex || config.traceIndex === "all") {
-                    printDebug("processing " + config.policy + " point at " + count);
-
-
-                    var traceSet = {
-                        variables: {},
-                        mpOutputs: {}
-                    };
-                    printDebug("examining properties to get mpExecutionTime");
-
-                    point.DebugInfo.Properties.Property.some(function(property) {
-                        if (property.$.name === "javascript-executionTime") {
-                            traceSet.mpExecutionTime = property.$text + " milliseconds";
-                            return true;
-                        }
-                    });
-
-                    if (point.VariableAccess) {
-                        printDebug("processing variables");
-
-                        if (point.VariableAccess.Get) {
-                            point.VariableAccess.Get.forEach(function(variable) {
-                                traceSet.variables[variable.$.name] = variable.$.value;
-                            });
-                        }
-                        if (point.VariableAccess.Set) {
-                            point.VariableAccess.Set.forEach(function(variable) {
-                                traceSet.mpOutputs[variable.$.name] = variable.$.value;
-                            });
-                        }
-                    }
-
-                    traceSets.push(traceSet);
-                    count++;
-                    if (count > config.traceIndex) {
-                        printDebug("closing file stream to tracefile");
-                        stream.close();
-                        //end may not get called when the underlying stream closes
-                        runControl(config);
-                    }
-                } else {
-                    printDebug("skipping " + config.policy + " point at " + count);
-                    count++;
-                }
-            }
         }
     });
 
@@ -578,9 +576,8 @@ function getScriptCode(policyName) {
     var data, script, code = "",
         baseDir = require('path').resolve("../../apiproxy/policies/"),
         files = fs.readdirSync(baseDir),
-        parser = new xml2js.Parser(),
-        scripts = [];
-        
+        parser = new xml2js.Parser();
+
     //extract the resources
     files.some(function(policy) {
         //read the policy file
@@ -618,10 +615,10 @@ function getScriptCode(policyName) {
 }
 
 function processXMLTraceFileCacheHit(config) {
-    var XmlStream = require('xml-stream'),
+    var XmlStream = require('/Users/davidallen/.npm_modules/lib/node_modules/xml-stream'),
         stream = fs.createReadStream(config.traceFile),
         xml = new XmlStream(stream),
-        count = 0;
+        props;
 
     xml.preserve('Point', true);
     xml.preserve('DebugInfo', true);
@@ -637,7 +634,7 @@ function processXMLTraceFileCacheHit(config) {
     xml.on('endElement: Point', function(point) {
         if (point.$.id === "StateChange" && point.RequestMessage) {
             //<Property name="From">REQ_START</Property>
-            var props = {};
+            props = {};
             point.DebugInfo.Properties.Property.forEach(function(property) {
                 props[property.$.name] = property.$text;
             });
@@ -686,7 +683,7 @@ function processXMLTraceFileCacheHit(config) {
                 req.verb = point.RequestMessage.Verb.$text;
             }
         } else if (point.DebugInfo && point.DebugInfo.Properties && point.DebugInfo.Properties.Property) {
-            var props = {};
+            props = {};
             props.timeStamp = point.DebugInfo.Timestamp.$text;
             point.DebugInfo.Properties.Property.forEach(function(property) {
                 props[property.$.name] = property.$text;
