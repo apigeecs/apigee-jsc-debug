@@ -5,26 +5,77 @@ var variables = {},
     monitors = {},
     traceSets = [],
     fs = require('fs'),
-    xml2js = require('xml2js');
+    xml2js = require('xml2js'),
+    runControl, execute, config;
 
-var setVariable = function(n, v, m) {
-    if (n.indexOf("[") > -1 || n.indexOf("]") > -1)
+var debug = function(configP) {
+    config = configP;
+    //callback based path through
+    //the process routines pass control to runControl
+    if (config.mode === "cacheHit") {
+        //we are doing a cacheHit analysis
+        //iterate through the trace file and gather all of the request URLs, sequence number
+        printDebug("loading xml tracefile for cache hit");
+        processXMLTraceFileCacheHit(config);
+
+    } else {
+        printDebug("loading script code");
+        //we want to also preload any of the dependencies
+        config.code = "";
+        if (config.dependencies) {
+            config.dependencies.forEach(function(dependency) {
+                config.code += getScriptCode(dependency);
+            });
+        }
+        config.code += getScriptCode(config.policy);
+        if (config.traceFile) {
+            if (!config.traceIndex) config.traceIndex = 0;
+            if (config.traceFile.indexOf(".xml") > -1) {
+                printDebug("loading xml tracefile");
+                processXMLTraceFile(config);
+            } else {
+                printDebug("loading json tracefile");
+                processJSONTraceFile(config);
+            }
+        } else {
+            //we can call runControl directly as we don't have a trace file
+            runControl(config);
+        }
+    }
+};
+
+var checkArray(n) {
+    if (n.indexOf("[") > -1 || n.indexOf("]") > -1) {
         throw new Error("Context Error: Array notation is not persisted in setVariable");
+    }
+}
+var checkURL = function(n, v) {
     if (n === "target.url") {
         var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
         if (!regexp.test(v))
             console.log("Context Error: setVariable(target.url) requires a valid URL. Attempt to set: " + v);
     }
+}
+
+var setVariable = function(n, v, m) {
+
+    checkArray(n);
+    checkURL(n, v);
     variables[n] = v;
 
     if (m === "init") {
-        if (!results.inputs) results.inputs = {};
+        if (!results.inputs) {
+            results.inputs = {};
+        }
         results.inputs[n] = v;
     } else {
-        if (!results.outputs) results.outputs = {};
+        if (!results.outputs) {
+            results.outputs = {};
+        }
         results.outputs[n] = v;
     }
 };
+
 
 var getVariable = function(n) {
     //if n has dot notation then we need to treat it as json
@@ -50,6 +101,12 @@ var getVariable = function(n) {
     return v;
 };
 
+var printDebug = function(msg) {
+    if (config.debug) {
+        print(msg);
+    }
+}
+
 print = function(msg) {
     console.log(msg);
 };
@@ -63,14 +120,19 @@ var echoJson = function(n) {
         console.log("\n" + JSON.stringify(n));
     } else {
         var o = getVariable(n);
-        if (!o) console.log(n);
-        if (typeof o === "object") console.log("\n" + JSON.stringify(o));
-        else console.log("\n" + o);
+        if (!o) {
+            console.log(n);
+        }
+        if (typeof o === "object") {
+            console.log("\n" + JSON.stringify(o));
+        } else {
+            console.log("\n" + o);
+        }
     }
 };
 
 var debugPolicy = function(policyName) {
-    var config = {
+    config = {
         policy: policyName,
         //all,monitors,inputs,outputs,accesses,errors
         results: "all"
@@ -78,42 +140,8 @@ var debugPolicy = function(policyName) {
     return debug(config);
 };
 
-var debug = function(config) {
-    //callback based path through
-    //the process routines pass control to runControl
-    if (config.mode === "cacheHit") {
-        //we are doing a cacheHit analysis
-        //iterate through the trace file and gather all of the request URLs, sequence number
-        if (config.debug) print("loading xml tracefile for cache hit");
-        processXMLTraceFileCacheHit(config);
 
-    } else {
-        if (config.debug) print("loading script code");
-        //we want to also preload any of the dependencies
-        config.code = "";
-        if (config.dependencies) {
-            config.dependencies.forEach(function(dependency) {
-                config.code += getScriptCode(dependency);
-            });
-        }
-        config.code += getScriptCode(config.policy);
-        if (config.traceFile) {
-            if (!config.traceIndex) config.traceIndex = 0;
-            if (config.traceFile.indexOf(".xml") > -1) {
-                if (config.debug) print("loading xml tracefile");
-                processXMLTraceFile(config);
-            } else {
-                if (config.debug) print("loading json tracefile");
-                processJSONTraceFile(config);
-            }
-        } else {
-            //we can call runControl directly as we don't have a trace file
-            runControl(config);
-        }
-    }
-};
-
-var runControl = function(config) {
+runControl = function(config) {
     //traceSet contains one or more sets of variables for execution
     //if traceSet is empty we execute without presetting any variables
     //presumable the caller has already done so
@@ -128,9 +156,7 @@ var runControl = function(config) {
             results = {};
             results.policy = config.policy;
             results.traceIndex = i;
-            if (config.debug) {
-                print("executing applyTraceSet");
-            }
+            printDebug("executing applyTraceSet");
             applyTraceSet(traceSets[i]);
             execute(config);
             if (config.silent !== true) {
@@ -140,9 +166,7 @@ var runControl = function(config) {
     } else if (!config.done) {
         //load variables if we are using a traceFile
         if (config.traceFile) {
-            if (config.debug) {
-                print("executing applyTraceSet");
-            }
+            printDebug("executing applyTraceSet");
             applyTraceSet(traceSets[0]);
         }
         execute(config);
@@ -153,19 +177,14 @@ var runControl = function(config) {
     }
 };
 
-var execute = function(config) {
-        if (config.debug) {
-            print("calling execute");
-        }
+execute = function(config) {
+        printDebug("calling execute");
         monitor(config.policy);
         try {
-            if (config.debug) {
-                print("executing policy code");
-            }
+            printDebug("executing policy code");
             eval(config.code);
-            if (config.debug) {
-                print("completed policy code");
-            }
+            printDebug("completed policy code");
+
         } catch (e) {
             if (!results.errors) {
                 results.errors = {};
@@ -177,9 +196,8 @@ var execute = function(config) {
         monitor(config.policy);
 
         if (config.testFile) {
-            if (config.debug) {
-                print("executing tests");
-            }
+            printDebug("executing tests");
+
             var tests = require(config.testFile);
             results.tests = [];
             //        var ctx = this;
@@ -190,7 +208,7 @@ var execute = function(config) {
 
         if (config.results) {
             if (config.results === "all" || config.results.indexOf("jshint") !== -1) {
-                if (config.debug) print("jshinting");
+                printDebug("jshinting");
                 var jshint = require('jshint');
                 if (!jshint.JSHINT(config.code)) {
                     results.jshint = {};
@@ -223,28 +241,28 @@ var execute = function(config) {
         if (config.results) {
             //all,monitors,inputs,outputs,accesses,monitors
             if (config.results !== "all") {
-                if (config.results.indexOf("monitors") == -1) {
+                if (config.results.indexOf("monitors") === -1) {
                     delete results.monitors;
                 }
-                if (config.results.indexOf("inputs") == -1) {
+                if (config.results.indexOf("inputs") === -1) {
                     delete results.inputs;
                 }
-                if (config.results.indexOf("outputs") == -1) {
+                if (config.results.indexOf("outputs") === -1) {
                     delete results.outputs;
                 }
-                if (config.results.indexOf("errors") == -1) {
+                if (config.results.indexOf("errors") === -1) {
                     delete results.errors;
                 }
-                if (config.results.indexOf("accesses") == -1) {
+                if (config.results.indexOf("accesses") === -1) {
                     delete results.accesses;
                 }
-                if (config.results.indexOf("tests") == -1) {
+                if (config.results.indexOf("tests") === -1) {
                     delete results.tests;
                 }
-                if (config.results.indexOf("diff") == -1) {
+                if (config.results.indexOf("diff") === -1) {
                     delete results.diff;
                 }
-                if (config.results.indexOf("mpOutputs") == -1) {
+                if (config.results.indexOf("mpOutputs") === -1) {
                     delete results.mpOutputs;
                 }
             }
@@ -254,13 +272,17 @@ var execute = function(config) {
             variables = {};
             var key;
             for (key in traceSet.variables) {
-                setVariable(key, traceSet.variables[key], "init");
+                if (traceSet.variables.hasOwnProperty(key)) {
+                    setVariable(key, traceSet.variables[key], "init");
+                }
             }
             if (!results.mpOutputs) {
                 results.mpOutputs = {};
             }
             for (key in traceSet.mpOutputs) {
-                results.mpOutputs[key] = traceSet.mpOutputs[key];
+                if (traceSet.mpOutputs.hasOwnProperty(key)) {
+                    results.mpOutputs[key] = traceSet.mpOutputs[key];
+                }
             }
             if (!results.monitor) {
                 results.monitors = {};
@@ -273,7 +295,9 @@ var execute = function(config) {
         };
 
         var monitor = function(n) {
-            if (!n) n = "default";
+            if (!n) {
+                n = "default";
+            }
             if (monitors[n]) {
                 var elapsed = Date.now() - monitors[n].startTime;
                 var mem = (process.memoryUsage().heapUsed - monitors[n].startMem);
@@ -304,13 +328,12 @@ var execute = function(config) {
         };
 
         function _diff(config, results) {
-            if (config.debug) print("starting diffing");
+            printDebug("starting diffing");
             var res;
             for (var key in results.outputs) {
                 if (config.diff === "all" || config.diff.indexOf(key) > -1) {
-                    if (config.debug) {
-                        print("diffing " + key + " object type " + typeof results.outputs[key] + " with content size " + results.outputs[key].length);
-                    }
+                    printDebug("diffing " + key + " object type " + typeof results.outputs[key] + " with content size " + results.outputs[key].length);
+
                     res = diff(results.outputs[key], results.mpOutputs[key]);
                     if (res) {
                         var diffNote = "";
@@ -336,9 +359,7 @@ var execute = function(config) {
                     }
                 }
             }
-            if (config.debug) {
-                print("finished diffing");
-            }
+            printDebug("finished diffing");
         }
 
         function diff(a, b) {
@@ -381,7 +402,9 @@ var execute = function(config) {
                     colEnd = line.lastIndexOf(")") - 1;
                     colNumber = line.substr(end + 1, colEnd);
                     result.line.push(transLine + "(" + getFileLineDescription(lineNumber) + ":" + colNumber);
-                } else result.line.push(line);
+                } else {
+                    result.line.push(line);
+                }
             });
 
             result.message = result.line.join('\n');
@@ -432,21 +455,18 @@ var execute = function(config) {
                     }
 
                     if (process) {
-                        if (config.debug) {
-                            print("examining " + config.policy + " point at " + count);
-                        }
+                        printDebug("examining " + config.policy + " point at " + count);
+
                         if (count == config.traceIndex || config.traceIndex === "all") {
-                            if (config.debug) {
-                                print("processing " + config.policy + " point at " + count);
-                            }
+                            printDebug("processing " + config.policy + " point at " + count);
+
 
                             var traceSet = {
                                 variables: {},
                                 mpOutputs: {}
                             };
-                            if (config.debug) {
-                                print("examining properties to get mpExecutionTime");
-                            }
+                            printDebug("examining properties to get mpExecutionTime");
+
                             point.DebugInfo.Properties.Property.some(function(property) {
                                 if (property.$.name === "javascript-executionTime") {
                                     traceSet.mpExecutionTime = property.$text + " milliseconds";
@@ -455,9 +475,8 @@ var execute = function(config) {
                             });
 
                             if (point.VariableAccess) {
-                                if (config.debug) {
-                                    print("processing variables");
-                                }
+                                printDebug("processing variables");
+
                                 if (point.VariableAccess.Get)
                                     point.VariableAccess.Get.forEach(function(variable) {
                                         traceSet.variables[variable.$.name] = variable.$.value;
@@ -472,15 +491,13 @@ var execute = function(config) {
                             traceSets.push(traceSet);
                             count++;
                             if (count > config.traceIndex) {
-                                if (config.debug) print("closing file stream to tracefile");
+                                printDebug("closing file stream to tracefile");
                                 stream.close();
                                 //end may not get called when the underlying stream closes
                                 runControl(config);
                             }
                         } else {
-                            if (config.debug) {
-                                print("skipping " + config.policy + " point at " + count);
-                            }
+                            printDebug("skipping " + config.policy + " point at " + count);
                             count++;
                         }
                     }
@@ -488,7 +505,7 @@ var execute = function(config) {
             });
 
             xml.on('end', function() {
-                if (config.debug) print("calling runControl from end of parsing, trace file entirely read");
+                printDebug("calling runControl from end of parsing, trace file entirely read");
                 runControl(config);
             });
         }
@@ -517,9 +534,13 @@ var execute = function(config) {
                                                     }
                                                 });
                                             }
-                                        })) return true;
+                                        })) {
+                                        return true;
+                                    }
                             }
-                        })) return true;
+                        })) {
+                        return true;
+                    }
             });
 
             if (step && step.results) {
@@ -614,7 +635,9 @@ var execute = function(config) {
                         props[property.$.name] = property.$text;
                     });
                     if (step.timeStamp) {
-                        if (!req.cacheResponse) req.cacheResponse = [];
+                        if (!req.cacheResponse) {
+                            req.cacheResponse = [];
+                        }
                         if (step.enforcement === "response" && step.l1Count.length > 1) {
                             step.added = step.l1Count[0] !== step.l1Count[1];
                         }
@@ -630,8 +653,9 @@ var execute = function(config) {
                                         if (prevStep.cacheKey === step.cacheKey) {
                                             step.previouslySeen = true;
                                             step.previouslySeenAt = prevStep.timeStamp;
-                                            if (prevStep.added)
+                                            if (prevStep.added) {
                                                 step.previouslyAdded = true;
+                                            }
                                             return true;
                                         }
                                     })) return true;
@@ -642,8 +666,12 @@ var execute = function(config) {
                     }
 
                     if (props.From === "REQ_START") {
-                        if (!results.requests) results.requests = [];
-                        if (req.cacheResponse) results.requests.push(req);
+                        if (!results.requests) {
+                            results.requests = [];
+                        }
+                        if (req.cacheResponse) {
+                            results.requests.push(req);
+                        }
                         req = {};
                         req.uri = point.RequestMessage.URI.$text;
                         req.verb = point.RequestMessage.Verb.$text;
@@ -692,8 +720,9 @@ var execute = function(config) {
             xml.on('end', function() {
                 if (!results.requests) results.requests = [];
                 results.requests.push(req);
-                if (config.silent !== true) echoJson(results);
-
+                if (config.silent !== true) {
+                    echoJson(results);
+                }
                 //analyzeCacheHit(config);
             });
         }
