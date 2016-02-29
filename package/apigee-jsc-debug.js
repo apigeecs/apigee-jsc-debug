@@ -7,7 +7,7 @@ var variables = {},
     scripts = [],
     fs = require('fs'),
     xml2js = require('/Users/davidallen/.npm_modules/lib/node_modules/xml2js'),
-    runControl, execute, config, printDebug, monitor, applyTraceSet;
+    runControl, execute, config, printDebug, monitor, applyTraceSet, processExecutionTime, processVariableAccess;
 
 var debug = function(configP) {
     config = configP;
@@ -336,26 +336,29 @@ monitor = function(n) {
 
 function _diff(config, results) {
     printDebug("starting diffing");
-    var res;
+    var res, diffNote;
+
+    var processPart = function(part) {
+        // green for additions, red for deletions
+        // grey for common parts
+        var note = part.added ? ">>>added:" :
+            part.removed ? ">>>removed:" : "<<<";
+        if (diffNote === "" && note === "<<<") {
+            diffNote += part.value;
+        } else {
+            diffNote += (note + part.value);
+        }
+    }
+
     for (var key in results.outputs) {
         if (config.diff === "all" || config.diff.indexOf(key) > -1) {
             printDebug("diffing " + key + " object type " + typeof results.outputs[key] + " with content size " + results.outputs[key].length);
 
             res = diff(results.outputs[key], results.mpOutputs[key]);
             if (res) {
-                var diffNote = "";
+                diffNote = "";
                 if (res.forEach) {
-                    res.forEach(function(part) {
-                        // green for additions, red for deletions
-                        // grey for common parts
-                        var note = part.added ? ">>>added:" :
-                            part.removed ? ">>>removed:" : "<<<";
-                        if (diffNote === "" && note === "<<<") {
-                            diffNote += part.value;
-                        } else {
-                            diffNote += (note + part.value);
-                        }
-                    });
+                    res.forEach(processPart);
                 } else {
                     diffNote = res;
                 }
@@ -366,6 +369,7 @@ function _diff(config, results) {
             }
         }
     }
+
     printDebug("finished diffing");
 }
 
@@ -450,7 +454,6 @@ function processXMLTraceFile(config) {
     xml.collect('Set');
 
     xml.on('endElement: Point', function(point) {
-        var process = false;
         if (point.$.id === "Execution") {
             if (point.DebugInfo) {
                 point.DebugInfo.Properties.Property.some(function(property) {
@@ -465,29 +468,9 @@ function processXMLTraceFile(config) {
                                 variables: {},
                                 mpOutputs: {}
                             };
-                            printDebug("examining properties to get mpExecutionTime");
 
-                            point.DebugInfo.Properties.Property.some(function(property) {
-                                if (property.$.name === "javascript-executionTime") {
-                                    traceSet.mpExecutionTime = property.$text + " milliseconds";
-                                    return true;
-                                }
-                            });
-
-                            if (point.VariableAccess) {
-                                printDebug("processing variables");
-
-                                if (point.VariableAccess.Get) {
-                                    point.VariableAccess.Get.forEach(function(variable) {
-                                        traceSet.variables[variable.$.name] = variable.$.value;
-                                    });
-                                }
-                                if (point.VariableAccess.Set) {
-                                    point.VariableAccess.Set.forEach(function(variable) {
-                                        traceSet.mpOutputs[variable.$.name] = variable.$.value;
-                                    });
-                                }
-                            }
+                            processExecutionTime(point, traceSet);
+                            processVariableAccess(point, traceSet);
 
                             traceSets.push(traceSet);
                             count++;
@@ -505,7 +488,6 @@ function processXMLTraceFile(config) {
                     }
                 });
             }
-
         }
     });
 
@@ -513,6 +495,34 @@ function processXMLTraceFile(config) {
         printDebug("calling runControl from end of parsing, trace file entirely read");
         runControl(config);
     });
+}
+
+processExecutionTime = function(point, traceSet) {
+    printDebug("examining properties to get mpExecutionTime");
+    point.DebugInfo.Properties.Property.some(function(property) {
+        if (property.$.name === "javascript-executionTime") {
+            traceSet.mpExecutionTime = property.$text + " milliseconds";
+            return true;
+        }
+    });
+}
+
+processVariableAccess = function(point, traceSet) {
+    if (point.VariableAccess) {
+        printDebug("processing variables");
+
+        if (point.VariableAccess.Get) {
+            point.VariableAccess.Get.forEach(function(variable) {
+                traceSet.variables[variable.$.name] = variable.$.value;
+            });
+        }
+        if (point.VariableAccess.Set) {
+            point.VariableAccess.Set.forEach(function(variable) {
+                traceSet.mpOutputs[variable.$.name] = variable.$.value;
+            });
+        }
+    }
+
 }
 
 function processJSONTraceFile(config) {

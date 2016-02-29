@@ -5,6 +5,7 @@ var config = {
     traceFile: "./trace-files/trace-1429993197148.xml",
     //all,monitors,inputs,outputs,accesses,monitors
     results: "monitors,outputs,errors,jshint",
+    "diff": "all",
     debug: true,
     traceIndex: "all",
     onFinish: function() {
