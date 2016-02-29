@@ -6,7 +6,7 @@ var variables = {},
     traceSets = [],
     fs = require('fs'),
     xml2js = require('xml2js'),
-    runControl, execute, config, printDebug, monitor;
+    runControl, execute, config, printDebug, monitor, applyTraceSet;
 
 var debug = function(configP) {
     config = configP;
@@ -272,7 +272,7 @@ execute = function(config) {
     }
 };
 
-var applyTraceSet = function(traceSet) {
+applyTraceSet = function(traceSet) {
     variables = {};
     var key;
     for (key in traceSet.variables) {
@@ -536,7 +536,7 @@ function processJSONTraceFile(config) {
                                                 step = entry;
                                                 return true;
                                             } else if (!step && prop.name === "javascript-executionTime") {
-                                                if (!results.monitors) results.monitors = {};
+                                                if (!results.monitors) { results.monitors = {}; }
                                                 results.monitors.mpExecutionTime = prop.value + " milliseconds";
                                             }
                                         });
@@ -576,13 +576,11 @@ function processJSONTraceFile(config) {
 function getScriptCode(policyName) {
     //build the script to execute
     var data, script, code = "",
-        includeFiles = [],
         baseDir = require('path').resolve("../../apiproxy/policies/"),
         files = fs.readdirSync(baseDir),
-        parser = new xml2js.Parser();
-
-    //initialize scripts - required for regression loops
-    scripts = [];
+        parser = new xml2js.Parser(),
+        scripts = [];
+        
     //extract the resources
     files.some(function(policy) {
         //read the policy file
@@ -715,12 +713,12 @@ function processXMLTraceFileCacheHit(config) {
             var vars = {};
             point.VariableAccess.Set.forEach(function(varAccess) {
                 var key = vars[varAccess.$.name];
-                if (vars[varAccess.$.name]) {
-                    vars[varAccess.$.name] = [vars[varAccess.$.name]];
+                if (vars[key]) {
+                    vars[key] = [vars[key]];
                 }
-                if (vars[varAccess.$.name] && vars[varAccess.$.name].length) {
-                    vars[varAccess.$.name].push(varAccess.$.value);
-                } else { vars[varAccess.$.name] = varAccess.$.value; }
+                if (vars[key] && vars[key].length) {
+                    vars[key].push(varAccess.$.value);
+                } else { vars[key] = varAccess.$.value; }
             });
             if (vars["responsecache.cachekey"]) { step.cacheKey = vars["responsecache.cachekey"]; }
             if (vars["responsecache.l1.count"]) { step.l1Count = vars["responsecache.l1.count"]; }
